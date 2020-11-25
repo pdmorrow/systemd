@@ -161,6 +161,9 @@ int config_parse_unit_deps(
         assert(lvalue);
         assert(rvalue);
 
+        if (isempty(rvalue))
+                return unit_remove_dependencies(u, UNIT_DEPENDENCY_FILE);
+
         for (const char *p = rvalue;;) {
                 _cleanup_free_ char *word = NULL, *k = NULL;
                 int r;
