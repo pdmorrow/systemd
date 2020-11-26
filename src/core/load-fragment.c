@@ -161,6 +161,13 @@ int config_parse_unit_deps(
         assert(lvalue);
         assert(rvalue);
 
+        if (d == UNIT_ON_FAILURE && isempty(rvalue)) {
+                /* Allow OnFailure clauses which are empty to reset the
+                 * OnFailure dependencies for this unit. */
+                unit_remove_dependencies_of_type(u, UNIT_DEPENDENCY_FILE, d);
+                return 0;
+        }
+
         for (const char *p = rvalue;;) {
                 _cleanup_free_ char *word = NULL, *k = NULL;
                 int r;
