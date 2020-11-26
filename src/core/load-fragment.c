@@ -153,6 +153,17 @@ int config_parse_unit_deps(
         assert(rvalue);
 
         p = rvalue;
+        if (d == UNIT_ON_FAILURE && isempty(p)) {
+                /* We want to be able to clear out OnFailure dependencies to
+                 * avoid recursive OnFailure event chaining. For example if
+                 * service a@.service is installed as a top level drop in with
+                 * an OnFailure dependency, we want to allow a drop in for
+                 * a@.service to clear out the recursive OnFailure dependency
+                 * on itself. */
+                unit_remove_dependencies_of_type(u, UNIT_DEPENDENCY_FILE, d);
+                return 0;
+        }
+
         for (;;) {
                 _cleanup_free_ char *word = NULL, *k = NULL;
                 int r;
