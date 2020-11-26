@@ -1,0 +1,6 @@
+[Unit]
+Description=Testsuite service
+
+[Service]
+ExecStart=/test-dep-removal.sh
+Type=oneshot
