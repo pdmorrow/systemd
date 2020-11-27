@@ -3180,12 +3180,35 @@ static int resolve_template(Unit *u, const char *name, char **buf, const char **
 }
 
 int unit_add_dependency_by_name(Unit *u, UnitDependency d, const char *name, bool add_reference, UnitDependencyMask mask) {
+        _cleanup_free_ char *instance = NULL;
         _cleanup_free_ char *buf = NULL;
         Unit *other;
         int r;
 
         assert(u);
         assert(name);
+
+        r = unit_name_to_instance(name, &instance);
+        if (r == UNIT_NAME_INSTANCE) {
+                _cleanup_free_ char *instance_prefix = NULL;
+                _cleanup_free_ char *prefix = NULL;
+
+                r = string_prefix(name, "@", &prefix);
+                /* There should always be a prefix and a suffix surrounding an
+                 * '@' here since this is a template instance. */
+                if (r < 0)
+                        return r;
+
+                r = string_prefix(instance, "@", &instance_prefix);
+                if (r == 0) {
+                        /* If the instance is another template instance of the
+                         * original template then this is a recursive
+                         * dependency, don't add it. */
+                    if (streq(prefix, instance_prefix))
+                            return -EINVAL;
+                }
+        } else if (r < 0)
+                return r;
 
         r = resolve_template(u, name, &buf, &name);
         if (r < 0)
