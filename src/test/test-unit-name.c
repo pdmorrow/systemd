@@ -480,6 +480,11 @@ static void test_unit_name_to_instance(void) {
         assert_se(streq(instance, ""));
         free(instance);
 
+        r = unit_name_to_instance("foo@foo@bar.service", &instance);
+        assert_se(r == UNIT_NAME_INSTANCE);
+        assert_se(streq(instance, "foo@bar"));
+        free(instance);
+
         r = unit_name_to_instance("fo0-stUff_b@b.service", &instance);
         assert_se(r == UNIT_NAME_INSTANCE);
         assert_se(streq(instance, "b"));
@@ -567,6 +572,7 @@ static void test_unit_name_to_prefix(void) {
         test_unit_name_to_prefix_one("quux@bar.mount", 0, "quux");
         test_unit_name_to_prefix_one("quux-@.mount", 0, "quux-");
         test_unit_name_to_prefix_one("@.mount", -EINVAL, NULL);
+        test_unit_name_to_prefix_one("foo@foo@bar.service", 0, "foo");
 }
 
 static void test_unit_name_from_dbus_path_one(const char *input, int ret, const char *output) {
