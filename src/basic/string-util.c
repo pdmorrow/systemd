@@ -880,6 +880,29 @@ char *strrep(const char *s, unsigned n) {
         return r;
 }
 
+int string_prefix(const char *s, const char *sep, char **l) {
+        char *x, *a;
+
+        assert(s);
+        assert(sep);
+        assert(l);
+
+        if (isempty(sep))
+                return -EINVAL;
+
+        x = strstr(s, sep);
+        if (!x)
+                return -EINVAL;
+
+        a = strndup(s, x - s);
+        if (!a)
+                return -ENOMEM;
+
+        *l = a;
+
+        return 0;
+}
+
 int split_pair(const char *s, const char *sep, char **l, char **r) {
         char *x, *a, *b;
 
