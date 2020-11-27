@@ -201,6 +201,8 @@ char *strextend_with_separator(char **x, const char *separator, ...) _sentinel_;
 
 char *strrep(const char *s, unsigned n);
 
+int string_prefix(const char *s, const char *sep, char **l);
+
 int split_pair(const char *s, const char *sep, char **l, char **r);
 
 int free_and_strdup(char **p, const char *s);

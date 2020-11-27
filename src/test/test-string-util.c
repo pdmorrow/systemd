@@ -463,6 +463,20 @@ static void test_in_charset(void) {
         assert_se(!in_charset("dddaaabbbcccc", "abc f"));
 }
 
+static void test_string_prefix(void) {
+        _cleanup_free_ char *a = NULL;
+
+        assert_se(string_prefix("", "", &a) == -EINVAL);
+        assert_se(string_prefix("foo=bar", "", &a) == -EINVAL);
+        assert_se(string_prefix("", "=", &a) == -EINVAL);
+        assert_se(string_prefix("foo@foo@bar.service", "@", &a) >= 0);
+        assert_se(streq(a, "foo"));
+        free(a);
+        assert_se(string_prefix("foo=bar", "=", &a) >= 0);
+        assert_se(streq(a, "foo"));
+        assert_se(string_prefix("foo", "=", &a) == -EINVAL);
+}
+
 static void test_split_pair(void) {
         _cleanup_free_ char *a = NULL, *b = NULL;
 
@@ -566,6 +580,7 @@ int main(int argc, char *argv[]) {
         test_delete_trailing_slashes();
         test_skip_leading_chars();
         test_in_charset();
+        test_string_prefix();
         test_split_pair();
         test_first_word();
         test_strlen_ptr();
