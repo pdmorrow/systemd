@@ -5321,52 +5321,17 @@ static void unit_update_dependency_mask(Unit *u, UnitDependency d, Unit *other, 
 }
 
 
-void unit_remove_dependencies_of_type(Unit *u, UnitDependencyMask mask, UnitDependency d) {
-        bool done;
+void unit_remove_onfailure_dependencies(Unit *u) {
+        UnitDependencyInfo di = {0};
+        Unit *other = NULL;
+        Iterator i = {0};
 
-        assert(d < _UNIT_DEPENDENCY_MAX);
         assert(u);
 
-        /* Removes all dependencies of type d that u has on other units marked
-         * for ownership by 'mask'. */
-
-        if (mask == 0)
-                return;
-
-        do {
-                UnitDependency inverse = inverse_table[d];
-                UnitDependencyInfo di = {0};
-                Unit *other = NULL;
-                Iterator i = {0};
-
-                done = true;
-
-                HASHMAP_FOREACH_KEY(di.data, other, u->dependencies[d], i) {
-                        if ((di.origin_mask & ~mask) == di.origin_mask)
-                                continue;
-                        di.origin_mask &= ~mask;
-                        unit_update_dependency_mask(u, d, other, di);
-
-                        /* Remove the inverse dependency if an inverse
-                         * relationship exists. */
-                        if (inverse != _UNIT_DEPENDENCY_INVALID && d != inverse) {
-                                UnitDependencyInfo dj = {0};
-
-                                dj.data = hashmap_get(other->dependencies[inverse], u);
-                                if (dj.data) {
-                                        if ((dj.destination_mask & ~mask) == dj.destination_mask)
-                                                continue;
-
-                                        dj.destination_mask &= ~mask;
-                                        unit_update_dependency_mask(other, inverse, u, dj);
-                                        unit_add_to_gc_queue(other);
-                                }
-                        }
-
-                        done = false;
-                        break;
-                }
-        } while (!done);
+        HASHMAP_FOREACH_KEY(di.data, other, u->dependencies[UNIT_ON_FAILURE], i) {
+                di.origin_mask &= ~(UNIT_DEPENDENCY_FILE);
+                unit_update_dependency_mask(u, UNIT_ON_FAILURE, other, di);
+        }
 }
 
 

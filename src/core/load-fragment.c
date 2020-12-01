@@ -160,7 +160,7 @@ int config_parse_unit_deps(
                  * an OnFailure dependency, we want to allow a drop in for
                  * a@.service to clear out the recursive OnFailure dependency
                  * on itself. */
-                unit_remove_dependencies_of_type(u, UNIT_DEPENDENCY_FILE, d);
+                unit_remove_onfailure_dependencies(u);
                 return 0;
         }
 
